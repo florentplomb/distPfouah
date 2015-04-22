@@ -8,11 +8,6 @@ var bcrypt = require('bcryptjs');
 
 var UserSchema = new Schema({
 
-  email: {
-    type: String,
-    lowercase: true,
-    required: true
-  },
   pseudo: {type: String, required: true},
   hashedPassword: {type: String, required: true},
 
@@ -47,7 +42,6 @@ UserSchema
 .get(function() {
   return {
     'id': this.id,
-    'email': this.email,
     'pseudo': this.pseudo,
     'like' : this.like,
     'imgId' : this.imgId,
@@ -60,13 +54,7 @@ UserSchema
 
 
 
-//Validate empty email
-UserSchema
-.path('email')
-.validate(function(email) {
-        //
-        return email.length;
-      }, 'Email cannot be blank');
+
 
 // Validate empty password
 UserSchema
@@ -76,21 +64,6 @@ UserSchema
 }, 'Password cannot be blank');
 
 //Validate email is not taken
-UserSchema
-.path('email')
-.validate(function(value, respond) {
-  var self = this;
-  this.constructor.findOne({
-    email: value
-  }, function(err, user) {
-    if (err) throw err;
-    if (user) {
-      if (self.id === user.id) return respond(true);
-      return respond(false);
-    }
-    respond(true);
-  });
-}, 'The specified email  is already in use.');
 
 //Validate pseudo is not taken
 UserSchema

@@ -41,12 +41,12 @@ exports.show = function(req, res) {
 
 exports.create = function(req, res) {
 
-  if (!req.body.pts) return res.status(400).json({
-    message: 'need points'
+    if (!req.body.gameName) return res.status(400).json({
+    message: 'need game'
   }).end();
 
   if (!req.body.user) return res.status(400).json({
-    message: 'need points'
+    message: 'need user'
   }).end();
 
   if (!req.body.pts) return res.status(400).json({
@@ -61,9 +61,6 @@ exports.create = function(req, res) {
     parseInt(req.body.pts);
   }
 
-
-
-  if (!req.body.gameName) return res.send(400, "need game");
   Game.findOne({
     name: req.body.gameName
   }, function(err, game) {
