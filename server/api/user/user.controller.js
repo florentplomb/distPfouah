@@ -26,8 +26,7 @@ function getRandomInt() {
 exports.index = function(req, res) {
 
   User.find()
-    .select('-salt -hashedPassword')
-    .populate('scores')
+    .select('-salt -hashedPassword -scores')
     .exec(function(err, users) {
       if (err) return res.send(500, err);
        if (users.length === 0) return res.status(400).json({
@@ -65,14 +64,8 @@ exports.create = function(req, res, next) {
   newUser.hashedPassword = bcrypt.hashSync(req.body.hashedPassword, 8);
   newUser.save(function(err, user) {
     if (err) return validationError(res, err);
-    // var token = jwt.sign({
-    //   _id: user._id
-    // }, config.secrets.session, {
-    //   expiresInMinutes: 60 * 5
-    // });
     res.json({
       user: user.profile
-        // token: token
     });
   });
 };
@@ -80,7 +73,7 @@ exports.create = function(req, res, next) {
 exports.score = function(req, res, next) {
   var usersScore = [];
   User.find()
-    .select('-salt -hashedPassword')
+    .select('-salt -hashedPassword ')
     .populate('scores')
     .exec(function(err, users) {
       if (users.length === 0) {
@@ -184,7 +177,7 @@ function scoreUsersData(req, res, next, callback) {
       if (err) {
         return next(err);
       }
-      if (scores === null) {
+      if (scores.length === 0) {
         return res.json({
           code: 204,
           message: "Score is Empty"
@@ -294,7 +287,7 @@ exports.userScore = function(req, res, next) {
 
     var userId = req.params.id;
     User.findById(userId)
-      .select('-hashedPassword -scores')
+      .select('-hashedPassword -salt -scores')
       .exec(function(err, user) {
         if (err) return res.send(500, err);
         usrScore.user = user;
@@ -349,7 +342,7 @@ exports.login = function(req, res, next) {
         var usrScore = {};
         var callback = function(tab) {
           User.findById(userId)
-            .select('-hashedPassword -scores -salt')
+            .select('-hashedPassword -scores ')
             .exec(function(err, user) {
               if (err) return res.send(500, err);
               usrScore.user = user;

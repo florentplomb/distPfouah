@@ -2,22 +2,28 @@
 
 var _ = require('lodash');
 var Image = require('./image.model');
-var Player = require('../user/user.model')
+var Player = require('../user/user.model');
+var Limitlike = require('../limitLike/limitLike.model');
 var fs = require('fs');
 
 var validationError = function(res, err) {
   return res.json(422, err);
 };
+function handleError(res, err) {
+  return res.send(500, err);
+}
 
 
 // Get list of images
 exports.index = function(req, res) {
-  Image.find(function(err, images) {
+  Image.find()
+  .select('-data')
+  .exec(function(err, images) {
     if (err) {
       return handleError(res, err);
     }
     return res.json(200, images);
-  });
+  })
 };
 
 
@@ -32,7 +38,6 @@ exports.liked = function(req, res) {
   }).end();
 
 
-
   Image.findById(req.params.id, function(err, image) {
     if (err) {
       return handleError(res, err);
@@ -40,6 +45,22 @@ exports.liked = function(req, res) {
     if (!image) {
       return handleError(res, err);
     }
+
+    Limitlike.find()
+    .and({
+      code: req.body.check
+    })
+    .exec(function(err, limiteLike) {
+      if (err) {
+      return handleError(res, err);
+    }
+
+      if (limiteLike.length === 0) {
+        return res.json({
+          code: 204,
+          message: "Code wrong"
+        }).end();
+      }
 
     for (var i = 0; i < image.likeBy.length; i++) {
 
@@ -64,6 +85,7 @@ exports.liked = function(req, res) {
       if (err) return validationError(res, err);
       return res.json(img.like);
     });
+  });
   });
 };
 

@@ -45,9 +45,23 @@ exports.create = function(req, res) {
     message: 'need points'
   }).end();
 
+  if (!req.body.user) return res.status(400).json({
+    message: 'need points'
+  }).end();
+
+  if (!req.body.pts) return res.status(400).json({
+    message: 'need points'
+  }).end();
+
   if (req.body.pts > 700) return res.status(400).json({
     message: 'points too high'
   }).end();
+
+  if (req.body.pts === 0) {
+    parseInt(req.body.pts);
+  }
+
+
 
   if (!req.body.gameName) return res.send(400, "need game");
   Game.findOne({
@@ -60,7 +74,7 @@ exports.create = function(req, res) {
       return handleError(res, "game doesn't exist");
     }
 
-    Player.findById(req.headers['x-user-id'], function(err, player) {
+    Player.findById(req.body.user, function(err, player) {
       if (err) {
         return handleError(res, err);
       }
@@ -70,7 +84,7 @@ exports.create = function(req, res) {
       var newScore = new Score();
       newScore.pts = parseInt(req.body.pts);
       newScore.gameName = req.body.gameName;
-      newScore.player = req.headers['x-user-id'];
+      newScore.player = req.body.user;
       newScore.save(function(err, score) {
         if (err) return validationError(res, err);
         player.scores.push(score.id);
