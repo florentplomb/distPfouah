@@ -26,6 +26,10 @@ function getRandomInt() {
 exports.index = function(req, res) {
 
   User.find()
+    .populate({
+  path: 'imgId',
+  select: '-data -likeBy',
+})
     .select('-salt -hashedPassword -scores')
     .exec(function(err, users) {
       if (err) return res.send(500, err);
