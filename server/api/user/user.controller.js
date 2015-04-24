@@ -27,9 +27,9 @@ exports.index = function(req, res) {
 
   User.find()
     .populate({
-  path: 'imgId',
-  select: '-data -likeBy',
-})
+      path: 'imgId',
+      select: '-data -likeBy',
+    })
     .select('-salt -hashedPassword -scores')
     .exec(function(err, users) {
       if (err) return res.send(500, err);
@@ -85,6 +85,8 @@ exports.score = function(req, res, next) {
 
       } else {
 
+
+
         for (var i = 0; i < users.length; i++) {
           var scores = users[i].scores
           var scoreTot = 0;
@@ -96,9 +98,13 @@ exports.score = function(req, res, next) {
           var user = {};
           for (var y = 0; y < scores.length; y++) {
 
-            scoreTot = scores[y].pts + scoreTot;
+
 
             if (scores[y].gameName === "trash") {
+
+              var ptsTrash = scores[y].pts * 1.4
+
+              scoreTot = ptsTrash + scoreTot;
 
               if (scores[y].pts > hsTrash) {
                 hsTrash = scores[y].pts;
@@ -107,12 +113,19 @@ exports.score = function(req, res, next) {
             }
             if (scores[y].gameName === "flash") {
 
+              var ptsFlash = scores[y].pts
+
+              scoreTot = ptsFlash + scoreTot;
+
               if (scores[y].pts > hsFlash) {
                 hsFlash = scores[y].pts;
               }
 
             }
             if (scores[y].gameName === "wash") {
+              var ptsWash = scores[y].pts * 3.75
+
+              scoreTot = ptsWash + scoreTot;
 
               if (scores[y].pts > hsWash) {
                 hsWash = scores[y].pts;
@@ -123,7 +136,7 @@ exports.score = function(req, res, next) {
           }
           totalHs = hsWash + hsTrash + hsFlash;
           tab = {
-            "scoreTot": scoreTot,
+            "scoreTot": Math.round(scoreTot),
             "hsWash": hsWash,
             "hsFlash": hsFlash,
             "hsTrash": hsTrash,
@@ -179,9 +192,26 @@ function scoreUsersData(req, res, next, callback) {
       }
 
       for (var i = 0; i < scores.length; i++) {
-        scoreTot = scores[i].pts + scoreTot;
+
+
+        if (scores[i].gameName === "wash") {
+
+          var ptsWash = scores[i].pts * 3.75
+
+          scoreTot = ptsWash + scoreTot;
+
+          if (scores[i].pts > hsWash) {
+            hsWash = scores[i].pts;
+          }
+
+        }
+
 
         if (scores[i].gameName === "trash") {
+
+          var ptsTrash = scores[i].pts * 1.4
+
+          scoreTot = ptsTrash + scoreTot;
 
           if (scores[i].pts > hsTrash) {
             hsTrash = scores[i].pts;
@@ -190,22 +220,21 @@ function scoreUsersData(req, res, next, callback) {
         }
         if (scores[i].gameName === "flash") {
 
+          var ptsFlash = scores[i].pts
+
+          scoreTot = ptsFlash + scoreTot;
+
           if (scores[i].pts > hsFlash) {
             hsFlash = scores[i].pts;
           }
 
         }
-        if (scores[i].gameName === "wash") {
 
-          if (scores[i].pts > hsWash) {
-            hsWash = scores[i].pts;
-          }
-        }
       }
 
       totalHs = hsWash + hsTrash + hsFlash;
       var tab = {
-        "scoreTot": scoreTot,
+        "scoreTot": Math.round(scoreTot),
         "hsWash": hsWash,
         "hsFlash": hsFlash,
         "hsTrash": hsTrash,
@@ -226,16 +255,43 @@ function scoreUsersData(req, res, next, callback) {
 
           } else {
 
+
+
             for (var i = 0; i < users.length; i++) {
               var scs = users[i].scores
               var scsTot = 0;
               var usr = {};
 
+
               for (var y = 0; y < scs.length; y++) {
 
-                scsTot = scs[y].pts + scsTot;
+
+
+                if (scs[y].gameName === "trash") {
+
+                  var ptsTrash = scs[y].pts * 1.4
+
+                  scsTot = ptsTrash + scsTot;
+
+                }
+                if (scs[y].gameName === "flash") {
+
+                  var ptsFlash = scs[y].pts
+
+                  scsTot = ptsFlash + scsTot;
+
+                }
+                if (scs[y].gameName === "wash") {
+                  var ptsWash = scs[y].pts * 3.75
+
+                  scsTot = ptsWash + scsTot
+
+                }
+
 
               }
+
+
               usr.id = users[i].id;
               usr.pts = scsTot;
               usersScore.push(usr);
@@ -246,6 +302,7 @@ function scoreUsersData(req, res, next, callback) {
             usersScore.reverse();
             var index = functiontofindIndexByKeyValue(usersScore, "id", req.params.id);
             index++;
+
 
             tab.rank = index;
             callback(tab);
@@ -306,43 +363,45 @@ exports.login = function(req, res, next) {
     message: 'need password'
   }).end();
 
-    User.findOne({ 'pseudo': req.body.pseudo },"", function (err, user) {
-  if (err) return validationError(res, err)
+  User.findOne({
+    'pseudo': req.body.pseudo
+  }, "", function(err, user) {
+    if (err) return validationError(res, err)
 
-      if (!user) {
+    if (!user) {
+      return res.status(422).json({
+        message: 'wrong pseudo'
+      }).end();
+    }
+    bcrypt.compare(req.body.hashedPassword, user.hashedPassword, function(err, isMatch) {
+      if (err) {
         return res.status(422).json({
-            message: 'wrong pseudo'
-          }).end();
+          message: 'wrong password'
+        }).end();
       }
-      bcrypt.compare(req.body.hashedPassword, user.hashedPassword, function(err, isMatch) {
-        if (err) {
-          return res.status(422).json({
-            message: 'wrong password'
-          }).end();
-        }
 
-        if (!isMatch) {
-          return res.status(422).json({
-            message: 'wrong password'
-          }).end();
-        }
-        var userId = user.id;
-        req.params.id = userId;
-        var usrScore = {};
-        var callback = function(tab) {
-          User.findById(userId)
-            .select('-hashedPassword -scores ')
-            .exec(function(err, user) {
-              if (err) return res.send(500, err);
-              usrScore.user = user;
-              usrScore.scores = tab;
-              return res.json(200, usrScore);
-            })
-        }
-        scoreUsersData(req, res, next, callback);
+      if (!isMatch) {
+        return res.status(422).json({
+          message: 'wrong password'
+        }).end();
+      }
+      var userId = user.id;
+      req.params.id = userId;
+      var usrScore = {};
+      var callback = function(tab) {
+        User.findById(userId)
+          .select('-hashedPassword -scores ')
+          .exec(function(err, user) {
+            if (err) return res.send(500, err);
+            usrScore.user = user;
+            usrScore.scores = tab;
+            return res.json(200, usrScore);
+          })
+      }
+      scoreUsersData(req, res, next, callback);
 
-      });
-})
+    });
+  })
 
 
 };
