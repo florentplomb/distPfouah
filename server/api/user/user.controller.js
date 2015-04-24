@@ -268,7 +268,7 @@ exports.userScore = function(req, res, next) {
   var userId = req.params.id;
   User.findById(userId, function(err, player) {
     if (err) {
-      return handleError(res, err);
+      return validationError(res, err)
     }
     if (!player) {
       return res.json("user undefined");
@@ -306,10 +306,9 @@ exports.login = function(req, res, next) {
     message: 'need password'
   }).end();
 
-  User.findOne({
-      pseudo: req.body.pseudo
-    })
-    .then(function(user) {
+    User.findOne({ 'pseudo': req.body.pseudo },"", function (err, user) {
+  if (err) return validationError(res, err)
+
       if (!user) {
         return res.status(422).json({
             message: 'wrong pseudo'
@@ -343,12 +342,8 @@ exports.login = function(req, res, next) {
         scoreUsersData(req, res, next, callback);
 
       });
+})
 
-    }).catch(function (err) {
-        return res.status(422).json({
-          message: err
-        }).end();
-    });
 
 };
 

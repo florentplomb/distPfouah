@@ -24,7 +24,6 @@ function isAuthenticated() {
   .use(function(req, res, next) {
 
 
-
     if (!req.headers['salt']) return res.status(400).json({
       message: 'header wrong'
     }).end();

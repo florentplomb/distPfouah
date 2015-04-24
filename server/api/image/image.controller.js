@@ -20,7 +20,7 @@ exports.index = function(req, res) {
   .select('-data')
   .exec(function(err, images) {
     if (err) {
-      return handleError(res, err);
+      return validationError(res, err);
     }
     return res.json(200, images);
   })
@@ -40,19 +40,15 @@ exports.liked = function(req, res) {
 
   Image.findById(req.params.id, function(err, image) {
     if (err) {
-      return handleError(res, err);
+      return validationError(res, err);
     }
     if (!image) {
-      return handleError(res, err);
+      return validationError(res, err);
     }
 
     Limitlike.findOne({
       code: req.body.check
-    })
-    .then(function(limiteLike) {
-      if (err) {
-      return handleError(res, err);
-    }
+    },"",function (err, limiteLike) {
 
       if (!limiteLike) {
         return res.json({
@@ -84,24 +80,19 @@ exports.liked = function(req, res) {
       if (err) return validationError(res, err);
       return res.json(img.like);
     });
-  }).catch(function (err) {
-        return res.status(422).json({
-          message: err
-        }).end();
-    });
+  });
   });
 };
-
 // Get a single image
 exports.show = function(req, res) {
   Image.findById(req.params.id, function(err, image) {
     if (err) {
-      return handleError(res, err);
+      return validationError(res, err);
     }
     if (!image) {
       return res.send(404);
     }
-    return res.end(image.data, 'binary');
+    return res.end(image.data,'binary');
   });
 };
 
@@ -114,7 +105,7 @@ exports.create = function(req, res) {
   }
 
   var newImg = new Image();
-  var imgBuf = new Buffer(req.body.imgBase64, 'base64');
+  var imgBuf = new Buffer(req.body.imgBase64,'base64');
   newImg.data = imgBuf;
   newImg.contentType = "image/png";
   newImg.save(function(err, img) {
@@ -140,7 +131,7 @@ exports.update = function(req, res) {
     var updated = _.merge(image, req.body);
     updated.save(function(err) {
       if (err) {
-        return handleError(res, err);
+        return validationError(res, err);
       }
       return res.json(200, image);
     });
