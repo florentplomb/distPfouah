@@ -43,7 +43,10 @@ exports.liked = function(req, res) {
       return validationError(res, err);
     }
     if (!image) {
-      return validationError(res, err);
+       return res.json({
+          code: 204,
+          message: "Image id wrong"
+        }).end();
     }
 
     Limitlike.findOne({
