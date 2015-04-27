@@ -14,6 +14,7 @@ function handleError(res, err) {
 }
 
 
+
 // Get list of images
 exports.index = function(req, res) {
   Image.find()

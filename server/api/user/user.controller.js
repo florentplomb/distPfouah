@@ -4,7 +4,7 @@ var User = require('./user.model');
 var Score = require('../score/score.model');
 var passport = require('passport');
 var config = require('../../config/environment');
-var jwt = require('jsonwebtoken');
+
 var _ = require('underscore');
 var bcrypt = require('bcryptjs');
 //var bcrypt = require('bcrypt');
