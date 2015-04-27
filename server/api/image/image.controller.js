@@ -3,12 +3,12 @@
 var _ = require('lodash');
 var Image = require('./image.model');
 var Player = require('../user/user.model');
-var Limitlike = require('../limitLike/limitLike.model');
 var fs = require('fs');
 
 var validationError = function(res, err) {
   return res.json(422, err);
 };
+
 function handleError(res, err) {
   return res.send(500, err);
 }
@@ -17,13 +17,13 @@ function handleError(res, err) {
 // Get list of images
 exports.index = function(req, res) {
   Image.find()
-  .select('-data')
-  .exec(function(err, images) {
-    if (err) {
-      return validationError(res, err);
-    }
-    return res.json(200, images);
-  })
+    .select('-data')
+    .exec(function(err, images) {
+      if (err) {
+        return validationError(res, err);
+      }
+      return res.json(200, images);
+    })
 };
 
 
@@ -43,26 +43,18 @@ exports.liked = function(req, res) {
       return validationError(res, err);
     }
     if (!image) {
-       return res.json({
-          code: 204,
-          message: "Image id wrong"
-        }).end();
+      return res.json({
+        code: 204,
+        message: "Image id wrong"
+      }).end();
     }
 
-    Limitlike.findOne({
-      code: req.body.check
-    },"",function (err, limiteLike) {
-
-      if (!limiteLike) {
-        return res.json({
-          code: 204,
-          message: "Code wrong"
-        }).end();
-      }
-
+    var checkString = req.body.check.toString();
     for (var i = 0; i < image.likeBy.length; i++) {
 
-      if (image.likeBy[i] === req.body.check) {
+
+
+      if (image.likeBy[i] === checkString) {
         return res.status(400).json({
           message: 'Vote already set'
         }).end();
@@ -74,16 +66,19 @@ exports.liked = function(req, res) {
     } else if (req.body.like === "n") {
       image.like = image.like - 1;
     } else {
-       return res.status(400).json({
-          message: 'like invalide'
-        }).end();
+      return res.status(400).json({
+        message: 'like invalide'
+      }).end();
     }
+
     image.likeBy.push(req.body.check);
     image.save(function(err, img) {
       if (err) return validationError(res, err);
       return res.json(img.like);
     });
-  });
+
+
+
   });
 };
 // Get a single image
@@ -95,7 +90,7 @@ exports.show = function(req, res) {
     if (!image) {
       return res.send(404);
     }
-    return res.end(image.data,'binary');
+    return res.end(image.data, 'binary');
   });
 };
 
@@ -108,7 +103,7 @@ exports.create = function(req, res) {
   }
 
   var newImg = new Image();
-  var imgBuf = new Buffer(req.body.imgBase64,'base64');
+  var imgBuf = new Buffer(req.body.imgBase64, 'base64');
   newImg.data = imgBuf;
   newImg.contentType = "image/png";
   newImg.save(function(err, img) {

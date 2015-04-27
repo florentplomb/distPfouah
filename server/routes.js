@@ -9,7 +9,7 @@ var errors = require('./components/errors');
 module.exports = function(app) {
 
   // Insert routes below
-  app.use('/api/limitLikes', require('./api/limitLike'));
+
 
   app.use('/api/images', require('./api/image'));
   app.use('/api/games', require('./api/game'));
