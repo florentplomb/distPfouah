@@ -5,6 +5,7 @@ var mongoose = require('mongoose'),
 
 var ImageSchema = new Schema({
   data: Buffer,
+  dataMin:Buffer,
   likeBy : [String],
   like : { type: Number, default: 0}
 });

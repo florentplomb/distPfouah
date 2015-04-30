@@ -5,6 +5,8 @@ var Image = require('./image.model');
 var Player = require('../user/user.model');
 var fs = require('fs');
 
+var lwip = require('node-lwip');
+
 var validationError = function(res, err) {
   return res.json(422, err);
 };
@@ -13,7 +15,45 @@ function handleError(res, err) {
   return res.send(500, err);
 }
 
+exports.show = function(req, res) {
 
+
+  var minPath = 'img/' + req.params.id + 'min.png';
+  if (!fs.existsSync(minPath)) {
+
+    Image.findById(req.params.id, function(err, image) {
+      if (err) {
+        return handleError(res, err);
+      }
+      if (!image) {
+        return res.send(404);
+      }
+      var newPath = 'img/' + image.id + '.png';
+      var minPath = 'img/' + image.id + 'min.png';
+
+      newPath.toString();
+      minPath.toString();
+
+      fs.writeFileSync(newPath, image.data);
+      console.log("ici");
+
+      lwip.open(newPath, function(err, image) {
+        image.resize(200, 200, 'lanczos', function(err, imageresize) {
+          imageresize.writeFile(minPath, function(err) {
+
+            return res.sendfile(minPath);
+          });
+
+        });
+
+      });
+
+    });
+
+  } else {
+    return res.sendfile(minPath);
+  };
+};
 
 // Get list of images
 exports.index = function(req, res) {
@@ -26,6 +66,8 @@ exports.index = function(req, res) {
       return res.json(200, images);
     })
 };
+
+
 
 
 exports.liked = function(req, res) {
@@ -83,17 +125,7 @@ exports.liked = function(req, res) {
   });
 };
 // Get a single image
-exports.show = function(req, res) {
-  Image.findById(req.params.id, function(err, image) {
-    if (err) {
-      return validationError(res, err);
-    }
-    if (!image) {
-      return res.send(404);
-    }
-    return res.end(image.data, 'binary');
-  });
-};
+
 
 // Creates a new image in the DB.
 exports.create = function(req, res) {

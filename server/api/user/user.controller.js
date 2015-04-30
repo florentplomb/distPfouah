@@ -144,7 +144,7 @@ exports.score = function(req, res, next) {
           };
           user.id = users[i].id;
           user.pseudo = users[i].pseudo;
-          user.imgUrl = users[i].imgUrl;
+          user.imgId = users[i].imgId;
           user.like = users[i].like;
           user.scores = tab;
 
@@ -265,8 +265,6 @@ function scoreUsersData(req, res, next, callback) {
 
               for (var y = 0; y < scs.length; y++) {
 
-
-
                 if (scs[y].gameName === "trash") {
 
                   var ptsTrash = scs[y].pts * 1.4
@@ -290,8 +288,6 @@ function scoreUsersData(req, res, next, callback) {
 
 
               }
-
-
               usr.id = users[i].id;
               usr.pts = scsTot;
               usersScore.push(usr);
