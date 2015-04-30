@@ -35,7 +35,7 @@ exports.show = function(req, res) {
       minPath.toString();
 
       fs.writeFileSync(newPath, image.data);
-      console.log("ici");
+
 
       lwip.open(newPath, function(err, image) {
         image.resize(200, 200, 'lanczos', function(err, imageresize) {
