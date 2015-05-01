@@ -1,0 +1,11 @@
+<div class="ngdialog-message">
+	<h4 class="videoh4">{{ngDialogData.title}}</h4>
+
+	 
+		<iframe width="80%" height="600" ng-src="{{ngDialogData.youtubeUrl | trustThisUrl}}" frameborder="0" allowfullscreen></iframe>
+	
+</div>
+
+<div id="btnCtn" class="ngdialog-buttons ">
+	<button type="button" id="modalBtn" class="ngdialog-button  ngdialog-button-primary" ng-click="openSecond(ngDialogData)">Suivant</button>
+</div>
